@@ -1,0 +1,212 @@
+<html>
+
+<head>
+    <title>Mortage Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        canvas {
+            max-width: 600;
+            max-height: 400;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .canvas-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <label>House Cost</label>
+        <!-- <input type="text" id="houseCost" value="300000" /> -->
+        <input type="range" id="houseCost" value="300000" min="0" max="1000000" step="1000" />
+        <label id="houseCostLabel">300000</label>
+    </div>
+    <div>
+        <label>Down Payment</label>
+        <input type="range" id="downPayment" value="0" min="0" max="300000" step="100" />
+        <label id="downPaymentLabel">0</label>
+    </div>
+    <div>
+        <label>Interest Rate</label>
+        <input type="range" id="interestRate" value="3.5" min="0" max="20" step="0.1" />
+        <label id="interestRateLabel">3.5</label>
+    </div>
+    <div>
+        <label>Monthly Payment</label>
+        <input type="range" id="monthlyPayment" value="900" min="0" max="6000" step="10" />
+        <label id="monthlyPaymentLabel">900</label>
+    </div>
+    <button id="calculate">
+        Calculate
+    </button>
+    <div class="canvas-container">
+        <canvas id="mortgageChart"></canvas>
+        <canvas id="totalPaidChart"></canvas>
+    </div>
+</body>
+<script>
+    const houseCostRange = document.getElementById("houseCost");
+    const downPaymentRange = document.getElementById("downPayment");
+    const interestRateSelect = document.getElementById("interestRate");
+    const monthlyPaymentRange = document.getElementById("monthlyPayment");
+    const calculateButton = document.getElementById("calculate");
+
+    let chart
+    let totalPaidChart
+
+    const calculate = () => {
+        if (!chart) {
+            const ctx = document.getElementById("mortgageChart").getContext("2d");
+
+            chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Mortgage",
+                        data: [],
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        borderWidth: 1
+                    },
+                    {
+                        label: "Interest",
+                        data: [],
+                        borderColor: "rgba(99, 132, 255, 1)",
+                        borderWidth: 1
+                    }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: "linear",
+                            position: "bottom",
+                            title: {
+                                display: true,
+                                text: "Years"
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        if (!totalPaidChart) {
+            const ctx = document.getElementById("totalPaidChart").getContext("2d");
+
+            totalPaidChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: "Total Paid",
+                        data: [],
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        borderWidth: 1
+                    }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: "linear",
+                            position: "bottom",
+                            title: {
+                                display: true,
+                                text: "Years"
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const houseCost = houseCostRange.value;
+        const downPayment = parseInt(downPaymentRange.value, 10)
+        const interestRate = interestRateSelect.value;
+        const monthlyPayment = monthlyPaymentRange.value;
+
+        let paidOff = houseCost - downPayment;
+        let totalInterestPaid = paidOff * (interestRate / 100)
+        let totalPaid = downPayment + totalInterestPaid;
+
+        const paidOffHistory = [paidOff]
+        const interestHistory = [totalInterestPaid]
+        const totalPaidHistory = [totalPaid]
+        let yearsNotDecreased = 0;
+
+        for (let i = 0; i < 500; i++) {
+            const interest = paidOff * (interestRate / 100);
+            totalInterestPaid += interest;
+            interestHistory.push(totalInterestPaid);
+            const payment = monthlyPayment * 12;
+            totalPaid += payment + interest;
+            totalPaidHistory.push(totalPaid)
+            const principal = payment - interest;
+            paidOff -= principal;
+
+            if (paidOff < 0) {
+                paidOff = 0;
+            }
+
+            paidOffHistory.push(paidOff);
+
+            if (paidOffHistory[i] >= paidOffHistory[i - 1]) {
+                yearsNotDecreased++;
+            } else {
+                yearsNotDecreased = 0;
+            }
+
+            if (yearsNotDecreased >= 20) {
+                break;
+            }
+
+            if (paidOff <= 0) {
+                break;
+            }
+        }
+
+        chart.data.labels = Array.from({ length: paidOffHistory.length }, (_, i) => i);
+        chart.data.datasets[0].data = paidOffHistory;
+        chart.data.datasets[1].data = interestHistory;
+        chart.update();
+
+        totalPaidChart.data.labels = Array.from({ length: totalPaidHistory.length }, (_, i) => i);
+        totalPaidChart.data.datasets[0].data = totalPaidHistory;
+        totalPaidChart.update();
+    }
+
+    interestRateSelect.oninput = (e) => {
+        document.getElementById("interestRateLabel").innerText = e.target.value;
+        calculate();
+    }
+
+    monthlyPaymentRange.oninput = (e) => {
+        document.getElementById("monthlyPaymentLabel").innerText = e.target.value;
+        calculate();
+    }
+
+    houseCostRange.oninput = (e) => {
+        document.getElementById("houseCostLabel").innerText = e.target.value;
+        calculate();
+    }
+
+    downPaymentRange.oninput = (e) => {
+        document.getElementById("downPaymentLabel").innerText = e.target.value;
+        calculate();
+    }
+
+    calculateButton.addEventListener("click", calculate);
+
+    calculate();
+</script>
+
+</html>
