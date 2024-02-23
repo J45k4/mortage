@@ -19,6 +19,10 @@
             display: flex;
             flex-wrap: wrap;
         }
+
+        label {
+            font-size: 20px;
+        }
     </style>
 </head>
 
@@ -44,6 +48,12 @@
         <input type="range" id="monthlyPayment" value="900" min="0" max="50000" step="10" />
         <label id="monthlyPaymentLabel">900</label>
     </div>
+    <div>
+        <label>Total Cost</label>
+        <label id="totalCost">0</label>
+        <label>Interest Cost</label>
+        <label id="interestCost">0</label>
+    </div>
     <button id="calculate">
         Calculate
     </button>
@@ -58,6 +68,16 @@
     const interestRateSelect = document.getElementById("interestRate");
     const monthlyPaymentRange = document.getElementById("monthlyPayment");
     const calculateButton = document.getElementById("calculate");
+
+    const numberFormatter = new Intl.NumberFormat('en-US', {
+        style: 'decimal',
+        maximumFractionDigits: 0,
+        // Use a space as the grouping separator
+        notation: "standard",
+        useGrouping: true,
+        // Define the custom space as the grouping separator
+        groupingSeparator: " "
+    });
 
     let chart
     let totalPaidChart
@@ -173,6 +193,9 @@
                 break;
             }
         }
+
+        document.getElementById("totalCost").innerText = numberFormatter.format(totalPaid.toFixed(2));
+        document.getElementById("interestCost").innerText = numberFormatter.format(totalInterestPaid.toFixed(2));
 
         chart.data.labels = Array.from({ length: paidOffHistory.length }, (_, i) => i);
         chart.data.datasets[0].data = paidOffHistory;
