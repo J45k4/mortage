@@ -25,6 +25,10 @@
             margin-left: 3px;
             margin-right: 3px;
         }
+
+        div {
+            margin: 5px;
+        }
     </style>
 </head>
 
@@ -56,16 +60,32 @@
         <label id="houseAppreciationLabel">3</label>
     </div>
     <div>
-        <label>Total Cost</label>
+        <label>Total Cost:</label>
         <label id="totalCost">0</label>
-        <label>Interest Cost</label>
+    </div>
+    <div>
+        <label>Interest Cost:</label>
         <label id="interestCost">0</label>
     </div>
     <div>
-        <label>Appreciated House Value</label>
+        <label>Appreciated House Value:</label>
         <label id="appreciatedHouseValue">0</label>
-        <label>Potention Profits</label>
+    </div>
+    <div>
+        <label>Potention Profits:</label>
         <label id="potentionProfits">0</label>
+    </div>
+    <div>
+        <label>Profit Percentage:</label>
+        <label id="profitPercentage">0</label>
+    </div>
+    <div>
+        <label>Profit per year:</label>
+        <label id="profitPerYear">0</label>
+    </div>
+    <div>
+        <label>Profit per year Percentage:</label>
+        <label id="profitPerYearPercentage">0</label>
     </div>
     <div class="canvas-container">
         <canvas id="mortgageChart"></canvas>
@@ -239,6 +259,12 @@
         document.getElementById("appreciatedHouseValue").innerText = numberFormatter.format(appreciatedHouseValue.toFixed(2));
         const potentialProfits = appreciatedHouseValue - totalPaid;
         document.getElementById("potentionProfits").innerText = numberFormatter.format(potentialProfits.toFixed(2));
+        const profitPercentage = (potentialProfits / totalPaid) * 100;
+        document.getElementById("profitPercentage").innerText = profitPercentage.toFixed(2) + "%";
+        const profitPerYear = potentialProfits / paidOffHistory.length;
+        document.getElementById("profitPerYear").innerText = numberFormatter.format(profitPerYear.toFixed(2));
+        const profitPerYearPercentage = profitPercentage / paidOffHistory.length;
+        document.getElementById("profitPerYearPercentage").innerText = profitPerYearPercentage.toFixed(2) + "%";
 
         chart.data.labels = Array.from({ length: paidOffHistory.length }, (_, i) => i);
         chart.data.datasets[0].data = paidOffHistory;
