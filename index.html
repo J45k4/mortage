@@ -37,27 +37,27 @@
         <label>House Cost</label>
         <!-- <input type="text" id="houseCost" value="300000" /> -->
         <input type="range" id="houseCost" value="300000" min="0" max="10000000" step="1000" />
-        <label id="houseCostLabel">300000</label>
+        <input type="text" id="houseCostInput" />
     </div>
     <div>
         <label>Down Payment</label>
         <input type="range" id="downPayment" value="0" min="0" max="300000" step="100" />
-        <label id="downPaymentLabel">0</label>
+        <input type="text" id="downPaymentInput" />
     </div>
     <div>
         <label>Interest Rate</label>
         <input type="range" id="interestRate" value="3.5" min="0" max="20" step="0.1" />
-        <label id="interestRateLabel">3.5</label>
+        <input type="text" id="interestRateInput" />
     </div>
     <div>
         <label>Monthly Payment</label>
         <input type="range" id="monthlyPayment" value="900" min="0" max="50000" step="10" />
-        <label id="monthlyPaymentLabel">900</label>
+        <input type="text" id="monthlyPaymentInput" />
     </div>
     <div>
         <label>House Appreciation</label>
         <input type="range" id="houseAppreciation" value="3" min="0" max="20" step="0.1" />
-        <label id="houseAppreciationLabel">3</label>
+        <input type="text" id="houseAppreciationInput" />
     </div>
     <div>
         <label>Total Cost:</label>
@@ -99,24 +99,30 @@
     const monthlyPaymentRange = document.getElementById("monthlyPayment");
     const houseAppreciationRange = document.getElementById("houseAppreciation");
 
-    const houseCostLabel = document.getElementById("houseCostLabel");
-    const downPaymentLabel = document.getElementById("downPaymentLabel");
-    const interestRateLabel = document.getElementById("interestRateLabel");
-    const houseAppreciationLabel = document.getElementById("houseAppreciationLabel");
-    const monthlyPaymentLabel = document.getElementById("monthlyPaymentLabel");
+    const houseCostInput = document.getElementById("houseCostInput");
+    const downPaymentInput = document.getElementById("downPaymentInput");
+    const interestRateInput = document.getElementById("interestRateInput");
+    const houseAppreciationInput = document.getElementById("houseAppreciationInput");
+    const monthlyPaymentInput = document.getElementById("monthlyPaymentInput");
 
-    houseCostRange.value = localStorage.getItem("houseCost") || 300000;
-    houseCostLabel.innerText = houseCostRange.value;
-    downPaymentRange.value = localStorage.getItem("downPayment") || 0;
-    downPaymentLabel.innerText = downPaymentRange.value;
-    interestRateSelect.value = localStorage.getItem("interestRate") || 3.5;
-    interestRateLabel.innerText = interestRateSelect.value;
-    houseAppreciationRange.value = localStorage.getItem("houseAppreciation") || 3;
-    houseAppreciationLabel.innerText = houseAppreciationRange.value;
-    monthlyPaymentRange.value = localStorage.getItem("monthlyPayment") || 900;
-    monthlyPaymentLabel.innerText = monthlyPaymentRange.value;
+    const defaultHouseCost = 300000;
+    const defaultDownPayment = 0;
+    const defaultInterestRate = 3.5;
+    const defaultHouseAppreciation = 3;
+    const defaultMonthlyPayment = 900;
 
-    const numberFormatter = new Intl.NumberFormat('en-US', {
+    houseCostRange.value = localStorage.getItem("houseCost") || defaultHouseCost;
+    houseCostInput.value = houseCostRange.value;
+    downPaymentRange.value = localStorage.getItem("downPayment") || defaultDownPayment;
+    downPaymentInput.value = downPaymentRange.value;
+    interestRateSelect.value = localStorage.getItem("interestRate") || defaultInterestRate;
+    interestRateInput.value = interestRateSelect.value;
+    houseAppreciationRange.value = localStorage.getItem("houseAppreciation") || defaultHouseAppreciation;
+    houseAppreciationInput.value = houseAppreciationRange.value;
+    monthlyPaymentRange.value = localStorage.getItem("monthlyPayment") || defaultMonthlyPayment;
+    monthlyPaymentInput.value = monthlyPaymentRange.value;
+
+    const numberFormatter = new Intl.NumberFormat('fi-FI', {
         style: 'decimal',
         maximumFractionDigits: 0,
         // Use a space as the grouping separator
@@ -279,31 +285,61 @@
 
     interestRateSelect.oninput = (e) => {
         localStorage.setItem("interestRate", e.target.value);
-        document.getElementById("interestRateLabel").innerText = e.target.value;
+        interestRateInput.value = e.target.value;
+        calculate();
+    }
+
+    interestRateInput.oninput = (e) => {
+        localStorage.setItem("interestRate", e.target.value);
+        interestRateSelect.value = e.target.value;
         calculate();
     }
 
     monthlyPaymentRange.oninput = (e) => {
         localStorage.setItem("monthlyPayment", e.target.value);
-        document.getElementById("monthlyPaymentLabel").innerText = e.target.value;
+        monthlyPaymentInput.value = e.target.value;
+        calculate();
+    }
+
+    monthlyPaymentInput.oninput = (e) => {
+        localStorage.setItem("monthlyPayment", e.target.value);
+        monthlyPaymentRange.value = e.target.value;
         calculate();
     }
 
     houseCostRange.oninput = (e) => {
         localStorage.setItem("houseCost", e.target.value);
-        document.getElementById("houseCostLabel").innerText = e.target.value;
+        houseCostInput.value = e.target.value;
+        calculate();
+    }
+
+    houseCostInput.oninput = (e) => {
+        localStorage.setItem("houseCost", e.target.value);
+        houseCostRange.value = e.target.value;
         calculate();
     }
 
     downPaymentRange.oninput = (e) => {
         localStorage.setItem("downPayment", e.target.value);
-        document.getElementById("downPaymentLabel").innerText = e.target.value;
+        downPaymentInput.value = e.target.value;
+        calculate();
+    }
+
+    downPaymentInput.oninput = (e) => {
+        localStorage.setItem("downPayment", e.target.value);
+        downPaymentRange.value = e.target.value;
         calculate();
     }
 
     houseAppreciationRange.oninput = (e) => {
         localStorage.setItem("houseAppreciation", e.target.value);
-        document.getElementById("houseAppreciationLabel").innerText = e.target.value;
+        houseAppreciationInput.value = e.target.value;
+        calculate();
+    }
+
+    houseAppreciationInput.oninput = (e) => {
+        localStorage.setItem("houseAppreciation", e.target.value);
+        houseAppreciationRange.value = e.target.value;
         calculate();
     }
 
