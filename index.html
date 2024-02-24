@@ -22,6 +22,8 @@
 
         label {
             font-size: 20px;
+            margin-left: 3px;
+            margin-right: 3px;
         }
     </style>
 </head>
@@ -49,14 +51,22 @@
         <label id="monthlyPaymentLabel">900</label>
     </div>
     <div>
+        <label>House Appreciation</label>
+        <input type="range" id="houseAppreciation" value="3" min="0" max="20" step="0.1" />
+        <label id="houseAppreciationLabel">3</label>
+    </div>
+    <div>
         <label>Total Cost</label>
         <label id="totalCost">0</label>
         <label>Interest Cost</label>
         <label id="interestCost">0</label>
     </div>
-    <button id="calculate">
-        Calculate
-    </button>
+    <div>
+        <label>Appreciated House Value</label>
+        <label id="appreciatedHouseValue">0</label>
+        <label>Potention Profits</label>
+        <label id="potentionProfits">0</label>
+    </div>
     <div class="canvas-container">
         <canvas id="mortgageChart"></canvas>
         <canvas id="totalPaidChart"></canvas>
@@ -67,11 +77,12 @@
     const downPaymentRange = document.getElementById("downPayment");
     const interestRateSelect = document.getElementById("interestRate");
     const monthlyPaymentRange = document.getElementById("monthlyPayment");
-    const calculateButton = document.getElementById("calculate");
+    const houseAppreciationRange = document.getElementById("houseAppreciation");
 
     const houseCostLabel = document.getElementById("houseCostLabel");
     const downPaymentLabel = document.getElementById("downPaymentLabel");
     const interestRateLabel = document.getElementById("interestRateLabel");
+    const houseAppreciationLabel = document.getElementById("houseAppreciationLabel");
     const monthlyPaymentLabel = document.getElementById("monthlyPaymentLabel");
 
     houseCostRange.value = localStorage.getItem("houseCost") || 300000;
@@ -80,6 +91,8 @@
     downPaymentLabel.innerText = downPaymentRange.value;
     interestRateSelect.value = localStorage.getItem("interestRate") || 3.5;
     interestRateLabel.innerText = interestRateSelect.value;
+    houseAppreciationRange.value = localStorage.getItem("houseAppreciation") || 3;
+    houseAppreciationLabel.innerText = houseAppreciationRange.value;
     monthlyPaymentRange.value = localStorage.getItem("monthlyPayment") || 900;
     monthlyPaymentLabel.innerText = monthlyPaymentRange.value;
 
@@ -145,6 +158,12 @@
                         data: [],
                         borderColor: "rgba(255, 99, 132, 1)",
                         borderWidth: 1
+                    },
+                    {
+                        label: "Appreciated House Value",
+                        data: [],
+                        borderColor: "rgba(99, 132, 255, 1)",
+                        borderWidth: 1
                     }
                     ]
                 },
@@ -168,16 +187,20 @@
         const interestRate = interestRateSelect.value;
         const monthlyPayment = monthlyPaymentRange.value;
 
-        let paidOff = houseCost - downPayment;
+        let paidOff = houseCost - downPayment
         let totalInterestPaid = 0
         let totalPaid = downPayment;
+        let appreciatedHouseValue = houseCost;
 
         const paidOffHistory = [paidOff]
         const interestHistory = [totalInterestPaid]
         const totalPaidHistory = [totalPaid]
+        const appreciatedHouseValueHistory = [appreciatedHouseValue]
         let yearsNotDecreased = 0;
 
         for (let i = 0; i < 500; i++) {
+            appreciatedHouseValue = appreciatedHouseValue * (1 + (houseAppreciationRange.value / 100));
+            appreciatedHouseValueHistory.push(appreciatedHouseValue);
             const interest = paidOff * (interestRate / 100);
             totalInterestPaid += interest;
             interestHistory.push(totalInterestPaid);
@@ -213,6 +236,9 @@
 
         document.getElementById("totalCost").innerText = numberFormatter.format(totalPaid.toFixed(2));
         document.getElementById("interestCost").innerText = numberFormatter.format(totalInterestPaid.toFixed(2));
+        document.getElementById("appreciatedHouseValue").innerText = numberFormatter.format(appreciatedHouseValue.toFixed(2));
+        const potentialProfits = appreciatedHouseValue - totalPaid;
+        document.getElementById("potentionProfits").innerText = numberFormatter.format(potentialProfits.toFixed(2));
 
         chart.data.labels = Array.from({ length: paidOffHistory.length }, (_, i) => i);
         chart.data.datasets[0].data = paidOffHistory;
@@ -221,6 +247,7 @@
 
         totalPaidChart.data.labels = Array.from({ length: totalPaidHistory.length }, (_, i) => i);
         totalPaidChart.data.datasets[0].data = totalPaidHistory;
+        totalPaidChart.data.datasets[1].data = appreciatedHouseValueHistory;
         totalPaidChart.update();
     }
 
@@ -248,7 +275,11 @@
         calculate();
     }
 
-    calculateButton.addEventListener("click", calculate);
+    houseAppreciationRange.oninput = (e) => {
+        localStorage.setItem("houseAppreciation", e.target.value);
+        document.getElementById("houseAppreciationLabel").innerText = e.target.value;
+        calculate();
+    }
 
     calculate();
 </script>
