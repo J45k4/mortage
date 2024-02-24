@@ -69,6 +69,20 @@
     const monthlyPaymentRange = document.getElementById("monthlyPayment");
     const calculateButton = document.getElementById("calculate");
 
+    const houseCostLabel = document.getElementById("houseCostLabel");
+    const downPaymentLabel = document.getElementById("downPaymentLabel");
+    const interestRateLabel = document.getElementById("interestRateLabel");
+    const monthlyPaymentLabel = document.getElementById("monthlyPaymentLabel");
+
+    houseCostRange.value = localStorage.getItem("houseCost") || 300000;
+    houseCostLabel.innerText = houseCostRange.value;
+    downPaymentRange.value = localStorage.getItem("downPayment") || 0;
+    downPaymentLabel.innerText = downPaymentRange.value;
+    interestRateSelect.value = localStorage.getItem("interestRate") || 3.5;
+    interestRateLabel.innerText = interestRateSelect.value;
+    monthlyPaymentRange.value = localStorage.getItem("monthlyPayment") || 900;
+    monthlyPaymentLabel.innerText = monthlyPaymentRange.value;
+
     const numberFormatter = new Intl.NumberFormat('en-US', {
         style: 'decimal',
         maximumFractionDigits: 0,
@@ -155,8 +169,8 @@
         const monthlyPayment = monthlyPaymentRange.value;
 
         let paidOff = houseCost - downPayment;
-        let totalInterestPaid = paidOff * (interestRate / 100)
-        let totalPaid = downPayment + totalInterestPaid;
+        let totalInterestPaid = 0
+        let totalPaid = downPayment;
 
         const paidOffHistory = [paidOff]
         const interestHistory = [totalInterestPaid]
@@ -167,15 +181,18 @@
             const interest = paidOff * (interestRate / 100);
             totalInterestPaid += interest;
             interestHistory.push(totalInterestPaid);
-            const payment = monthlyPayment * 12;
-            totalPaid += payment + interest;
-            totalPaidHistory.push(totalPaid)
-            const principal = payment - interest;
+            let payment = monthlyPayment * 12;
+            let principal = payment - interest;
+
+            if (paidOff < principal) {
+                payment = paidOff + interest;
+                principal = paidOff;
+            }
+
             paidOff -= principal;
 
-            if (paidOff < 0) {
-                paidOff = 0;
-            }
+            totalPaid += payment;
+            totalPaidHistory.push(totalPaid)
 
             paidOffHistory.push(paidOff);
 
@@ -208,21 +225,25 @@
     }
 
     interestRateSelect.oninput = (e) => {
+        localStorage.setItem("interestRate", e.target.value);
         document.getElementById("interestRateLabel").innerText = e.target.value;
         calculate();
     }
 
     monthlyPaymentRange.oninput = (e) => {
+        localStorage.setItem("monthlyPayment", e.target.value);
         document.getElementById("monthlyPaymentLabel").innerText = e.target.value;
         calculate();
     }
 
     houseCostRange.oninput = (e) => {
+        localStorage.setItem("houseCost", e.target.value);
         document.getElementById("houseCostLabel").innerText = e.target.value;
         calculate();
     }
 
     downPaymentRange.oninput = (e) => {
+        localStorage.setItem("downPayment", e.target.value);
         document.getElementById("downPaymentLabel").innerText = e.target.value;
         calculate();
     }
